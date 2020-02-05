@@ -154,6 +154,7 @@ while getopts "hn:s:b:uam:zgwrl:d:kpo" ARG ; do
     k) NOT_CLEAN_UP=1 ;;
     p) PARALLEL=1 ;;
     o) OUTPUT_FILE=1 ;;
+    O) OUTPUT_FILENAME=${OPTARG} ;;
     *) echo -e "${RED}[ERROR] Invalid option! ${OPTARG} ${NC}" 
        exit 1
        ;;
