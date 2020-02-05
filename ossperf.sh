@@ -26,7 +26,7 @@
 
 function usage
 {
-echo "$SCRIPT -n files -s size [-b <bucket>] [-u] [-a] [-m <alias>] [-z] [-g] [-w] [-l <location>] [-d <url>] [-k] [-p] [-o]
+echo "$SCRIPT -n files -s size [-b <bucket>] [-B] [-R <region>] [-u] [-a] [-m <alias>] [-z] [-g] [-w] [-l <location>] [-d <url>] [-k] [-p] [-o] [-O <output_file_name>]
 
 This script analyzes the performance and data integrity of S3-compatible
 storage services 
@@ -128,7 +128,7 @@ YELLOW='\033[0;33m'       # Yellow color
 BLUE='\033[0;34m'         # Blue color
 WHITE='\033[0;37m'        # White color
 
-while getopts "hn:s:b:uam:zgwrl:d:kpo" ARG ; do
+while getopts "hn:s:b:BR:uam:zgwrl:d:kpoO:" ARG ; do
   case $ARG in
     h) usage ;;
     n) NUM_FILES=${OPTARG} ;;
