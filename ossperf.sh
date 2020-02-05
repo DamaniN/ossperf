@@ -42,6 +42,11 @@ Arguments:
      storage services implement a global bucket namespace. This means 
      that all bucket names must be unique. With the argument -b <bucket> 
      the users of ossperf have the freedom to specify the bucket name
+-B : For AWS  and Azure do not create or remove the Bucket/Container. This
+     allows for pre-created buckets/containers to be used. For Azure it
+     also eliminates the need to login to Azure. This option requires 
+     that the specified bucket/container or default bucket/container 
+     already exists. See the -b option for more details. 
 -u : use upper-case letters for the bucket name (this is required for Nimbus 
      Cumulus and S3ninja)
 -a : use the Swift API and not the S3 API (this requires the python client 
@@ -100,6 +105,7 @@ BUCKET_LOCATION_SITE=
 ENDPOINT_URL=0 
 ENDPOINT_URL_ADDRESS=
 AZURE_CLI=0
+BUCKET_NO_LOGIN=0
 S4CMD_CLIENT=0
 GOOGLE_API=0
 AWS_CLI_API=0
@@ -126,6 +132,7 @@ while getopts "hn:s:b:uam:zgwrl:d:kpo" ARG ; do
     # If the flag has been set => $NOT_CLEAN_UP gets value 1
     b) BUCKETNAME_PARAMETER=1
        BUCKET=${OPTARG} ;; 
+    B) BUCKET_NO_LOGIN=1 ;;
     u) UPPERCASE=1 ;;
     a) SWIFT_API=1 ;;
     m) MINIO_CLIENT=1 
@@ -408,13 +415,15 @@ elif [ "$MINIO_CLIENT" -eq 1 ] ; then
   fi
 # <-=-=-=-> mc (end)       <-=-=-=->
 # <-=-=-=-> az (start)     <-=-=-=->
-elif [ "$AZURE_CLI" -eq 1 ] ; then
+elif [ "$AZURE_CLI" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
   # use the Azure CLI
   if az storage container list ; then
     echo -e "${GREEN}[OK] The storage service can be accessed via the tool az.${NC}"
   else
     echo -e "${RED}[ERROR] Unable to access the storage service via the tool az.${NC}" && exit 1
   fi
+elif [ "$AZURE_CLI" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 1 ] ; then
+  echo -e "${YELLOW}[INFO] The -B option was specified. Skipping listing buckets (containers).${NC}"
 # <-=-=-=-> az (end)       <-=-=-=->
 # <-=-=-=-> gsutil (start) <-=-=-=->
 elif [ "$GOOGLE_API" -eq 1 ] ; then
@@ -544,13 +553,15 @@ elif [ "$MINIO_CLIENT" -eq 1 ] ; then
   else
     echo -e "${RED}[ERROR] Unable to create the bucket ${BUCKET} with mc.${NC}" && exit 1
   fi
-elif [ "$AZURE_CLI" -eq 1 ] ; then
+elif [ "$AZURE_CLI" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
   # use the Azure CLI
   if az storage container create --name $BUCKET ; then
     echo -e "${GREEN}[OK] Bucket ${BUCKET} has been created with az.${NC}"
   else
     echo -e "${RED}[ERROR] Unable to create the bucket (container) ${BUCKET} with az.${NC}" && exit 1
   fi
+elif [ "$AZURE_CLI" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 1 ] ; then
+  echo -e "${YELLOW}[INFO] The -B option was specified. Skipping bucket (container) creation.${NC}"
 elif [ "$GOOGLE_API" -eq 1 ] ; then
   # use the Google API
   if [ "$BUCKET_LOCATION" -eq 1 ] ; then
@@ -568,7 +579,7 @@ elif [ "$GOOGLE_API" -eq 1 ] ; then
       echo -e "${RED}[ERROR] Unable to create the bucket (container) ${BUCKET} with gsutil.${NC}" && exit 1
     fi
   fi
-elif [ "$AWS_CLI_API" -eq 1 ] ; then
+elif [ "$AWS_CLI_API" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
   # use the AWS CLI
     # If [ -z "$VAR" ] is true of the variable $VAR is empty. 
   if [ -z "$ENDPOINT_URL_ADDRESS" ] ; then
@@ -587,6 +598,8 @@ elif [ "$AWS_CLI_API" -eq 1 ] ; then
       echo -e "${RED}[ERROR] Unable to create the bucket (container) ${BUCKET} with aws.${NC}" && exit 1
     fi
   fi
+elif [ "$AWS_CLI_API" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 1 ] ; then
+  echo -e "${YELLOW}[INFO] The -B option was specified. Skipping bucket (container) creation.${NC}"
 
 elif [ "$S4CMD_CLIENT" -eq 1 ] ; then
   # use the s4cmd CLI
@@ -1509,13 +1522,15 @@ elif [ "$MINIO_CLIENT" -eq 1 ] ; then
   else
     echo -e "${RED}[ERROR] Unable to erase the bucket ${BUCKET} with mc.${NC}" && exit 1
   fi
-elif [ "$AZURE_CLI" -eq 1 ] ; then
+elif [ "$AZURE_CLI" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
   # use the Azure CLI
   if az storage container delete --name $BUCKET ; then
     echo -e "${GREEN}[OK] Bucket (Container) ${BUCKET} has been erased with az.${NC}"
   else
     echo -e "${RED}[ERROR] Unable to erase the bucket (container) ${BUCKET} with az.${NC}" && exit 1
   fi
+elif [ "$AZURE_CLI" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 1 ] ; then
+  echo -e "${YELLOW}[INFO] The -B option was specified. Skipping bucket (container) deletion.${NC}"
 elif [ "$GOOGLE_API" -eq 1 ] ; then
   # use the Google API
   if gsutil rm -r gs://$BUCKET ; then
@@ -1523,7 +1538,7 @@ elif [ "$GOOGLE_API" -eq 1 ] ; then
   else
     echo -e "${RED}[ERROR] Unable to erase the bucket (container) ${BUCKET} with gsutil.${NC}" && exit 1
   fi
-elif [ "$AWS_CLI_API" -eq 1 ] ; then
+elif [ "$AWS_CLI_API" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
   # use the AWS CLI
   # If [ -z "$VAR" ] is true of the variable $VAR is empty. 
   if [ -z "$ENDPOINT_URL_ADDRESS" ] ; then
@@ -1542,6 +1557,8 @@ elif [ "$AWS_CLI_API" -eq 1 ] ; then
       echo -e "${RED}[ERROR] Unable to erase the bucket (container) ${BUCKET} with aws.${NC}" && exit 1
     fi
   fi
+elif [ "$AWS_CLI_API" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 1 ] ; then
+  echo -e "${YELLOW}[INFO] The -B option was specified. Skipping bucket (container) deletion.${NC}"
 elif [ "$S4CMD_CLIENT" -eq 1 ] ; then
   # use the s4cmd CLI
   # If [ -z "$VAR" ] is true of the variable $VAR is empty. 
