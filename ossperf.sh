@@ -315,7 +315,7 @@ if [ "$S4CMD_CLIENT" -eq 1 ] ; then
   else
     echo -e "${YELLOW}[INFO] The s4cmd client has been found on this system.${NC}"
     s4cmd --version
-    echo -e "${YELLOW}[INFO] But because s4cmd does not implemnt the feature of earsing buckets,it is not supported by ossperf up to now\nhttps://github.com/bloomreach/s4cmd/issues/164.${NC}" && exit 1
+    echo -e "${YELLOW}[INFO] But because s4cmd does not implement the feature of erasing buckets,it is not supported by ossperf up to now\nhttps://github.com/bloomreach/s4cmd/issues/164.${NC}" && exit 1
   fi
 fi
 
