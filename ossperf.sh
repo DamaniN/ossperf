@@ -567,7 +567,7 @@ elif [ "$MINIO_CLIENT" -eq 1 ] ; then
 elif [ "$AZURE_CLI" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
   # use the Azure CLI
   if az storage container create --name $BUCKET ; then
-    echo -e "${GREEN}[OK] Bucket ${BUCKET} has been created with az.${NC}"
+    echo -e "${GREEN}[OK] Bucket (Container) ${BUCKET} has been created with az.${NC}"
   else
     echo -e "${RED}[ERROR] Unable to create the bucket (container) ${BUCKET} with az.${NC}" && exit 1
   fi
