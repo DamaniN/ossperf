@@ -69,6 +69,7 @@ Arguments:
 -k : keep the local files and the directory afterwards (do not clean up)
 -p : upload and download the files in parallel
 -o : appended the results to a local file results.csv
+-O : name of output file
 "
 exit 0
 }
@@ -340,7 +341,11 @@ DIRECTORY="testfiles"
 # "Bucket names cannot contain periods"
 
 # Filename of the output file
+if [ -z "$OUTPUT_FILENAME" ]; then
 OUTPUT_FILENAME=results.csv
+else 
+  echo -e "${YELLOW}[INFO] Output filename is ${OUTPUT_FILENAME}.${NC}"
+fi
 
 # If the user did not want to specify the bucket name with the parameter -b <bucket>, ossperf will use the default bucket name
 if [ "$BUCKETNAME_PARAMETER" -eq 0 ] ; then
