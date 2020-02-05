@@ -47,6 +47,7 @@ Arguments:
      also eliminates the need to login to Azure. This option requires 
      that the specified bucket/container or default bucket/container 
      already exists. See the -b option for more details. 
+-R : AWS Region (AWS CLI method only)
 -u : use upper-case letters for the bucket name (this is required for Nimbus 
      Cumulus and S3ninja)
 -a : use the Swift API and not the S3 API (this requires the python client 
@@ -106,6 +107,8 @@ ENDPOINT_URL=0
 ENDPOINT_URL_ADDRESS=
 AZURE_CLI=0
 BUCKET_NO_LOGIN=0
+REGION_PARAMETER=0
+REGION=" "
 S4CMD_CLIENT=0
 GOOGLE_API=0
 AWS_CLI_API=0
@@ -133,6 +136,8 @@ while getopts "hn:s:b:uam:zgwrl:d:kpo" ARG ; do
     b) BUCKETNAME_PARAMETER=1
        BUCKET=${OPTARG} ;; 
     B) BUCKET_NO_LOGIN=1 ;;
+    R) REGION_PARAMETER=1
+       REGION="--region=${OPTARG}" ;; 
     u) UPPERCASE=1 ;;
     a) SWIFT_API=1 ;;
     m) MINIO_CLIENT=1 
@@ -441,7 +446,7 @@ elif [ "$AWS_CLI_API" -eq 1 ] ; then
   # If [ -z "$VAR" ] is true of the variable $VAR is empty. 
   if [ -z "$ENDPOINT_URL_ADDRESS" ] ; then
     # use the aws cli with Amazon AWS S3
-    if aws s3 ls ; then
+    if aws $REGION s3 ls ; then
       echo -e "${GREEN}[OK] The storage service can be accessed via the tool aws.${NC}"
     else
       echo -e "${RED}[ERROR] Unable to access the storage service via the tool aws.${NC}" && exit 1
@@ -449,7 +454,7 @@ elif [ "$AWS_CLI_API" -eq 1 ] ; then
   # If the variable $ENDPOINT_URL_ADDRESS is not empty...
   else
     # use the aws cli with an S3-compatible non-Amazon service (e.g. Minio)
-    if aws --endpoint-url=$ENDPOINT_URL_ADDRESS s3 ls ; then
+    if aws $REGION --endpoint-url=$ENDPOINT_URL_ADDRESS s3 ls ; then
       echo -e "${GREEN}[OK] The storage service can be accessed via the tool aws.${NC}"
     else
       echo -e "${RED}[ERROR] Unable to access the storage service via the tool aws.${NC}" && exit 1
@@ -584,7 +589,7 @@ elif [ "$AWS_CLI_API" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
     # If [ -z "$VAR" ] is true of the variable $VAR is empty. 
   if [ -z "$ENDPOINT_URL_ADDRESS" ] ; then
     # use the aws cli with Amazon AWS S3
-    if aws s3 mb s3://$BUCKET ; then
+    if aws $REGION s3 mb s3://$BUCKET ; then
       echo -e "${GREEN}[OK] Bucket ${BUCKET} has been created with aws.${NC}"
     else
       echo -e "${RED}[ERROR] Unable to create the bucket (container) ${BUCKET} with aws.${NC}" && exit 1
@@ -592,7 +597,7 @@ elif [ "$AWS_CLI_API" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
   # If the variable $ENDPOINT_URL_ADDRESS is not empty...
   else
     # use the aws cli with an S3-compatible non-Amazon service (e.g. Minio)
-    if aws --endpoint-url=$ENDPOINT_URL_ADDRESS s3 mb s3://$BUCKET ; then
+    if aws $REGION --endpoint-url=$ENDPOINT_URL_ADDRESS s3 mb s3://$BUCKET ; then
       echo -e "${GREEN}[OK] Bucket ${BUCKET} has been created with aws.${NC}"
     else
       echo -e "${RED}[ERROR] Unable to create the bucket (container) ${BUCKET} with aws.${NC}" && exit 1
@@ -710,7 +715,7 @@ if [ "$AWS_CLI_API" -eq 1 ] ; then
     if [ -z "$ENDPOINT_URL_ADDRESS" ] ; then
       # use the aws cli with Amazon AWS S3
       # Check if the Bucket is accessible
-      if aws s3 ls s3://$BUCKET ; then
+      if aws $REGION s3 ls s3://$BUCKET ; then
         echo -e "${GREEN}[OK] The bucket is available (checked with aws).${NC}"
         # Skip entire rest of loop.
         break
@@ -725,7 +730,7 @@ if [ "$AWS_CLI_API" -eq 1 ] ; then
     else
       # use the aws cli with an S3-compatible non-Amazon service (e.g. Minio)
       # Check if the Bucket is accessible
-      if aws --endpoint-url=$ENDPOINT_URL_ADDRESS s3 ls s3://$BUCKET ; then
+      if aws $REGION --endpoint-url=$ENDPOINT_URL_ADDRESS s3 ls s3://$BUCKET ; then
         echo -e "${GREEN}[OK] The bucket is available (checked with aws).${NC}"
         # Skip entire rest of loop.
         break
@@ -948,7 +953,7 @@ else
     # If [ -z "$VAR" ] is true of the variable $VAR is empty. 
     if [ -z "$ENDPOINT_URL_ADDRESS" ] ; then
       # Upload files sequentially
-      if aws s3 cp $DIRECTORY/ s3://$BUCKET --recursive --exclude "*" --include "*.txt" ; then
+      if aws $REGION s3 cp $DIRECTORY/ s3://$BUCKET --recursive --exclude "*" --include "*.txt" ; then
         echo -e "${GREEN}[OK] Files have been uploaded sequentially with aws.${NC}"
       else
         echo -e "${RED}[ERROR] Unable to upload the files sequentially with aws.${NC}" && exit 1
@@ -956,7 +961,7 @@ else
     # If the variable $ENDPOINT_URL_ADDRESS is not empty...
     else
       # use the aws cli with an S3-compatible non-Amazon service (e.g. Minio)
-      if aws --endpoint-url=$ENDPOINT_URL_ADDRESS s3 cp $DIRECTORY/ s3://$BUCKET --recursive --exclude "*" --include "*.txt" ; then
+      if aws $REGION --endpoint-url=$ENDPOINT_URL_ADDRESS s3 cp $DIRECTORY/ s3://$BUCKET --recursive --exclude "*" --include "*.txt" ; then
         echo -e "${GREEN}[OK] Files have been uploaded sequentially with aws.${NC}"
       else
         echo -e "${RED}[ERROR] Unable to upload the files sequentially with aws.${NC}" && exit 1
@@ -1061,7 +1066,7 @@ elif [ "$AWS_CLI_API" -eq 1 ] ; then
   # If [ -z "$VAR" ] is true of the variable $VAR is empty. 
   if [ -z "$ENDPOINT_URL_ADDRESS" ] ; then
     # use the aws cli with Amazon AWS S3
-    if aws s3 ls s3://$BUCKET ; then
+    if aws $REGION s3 ls s3://$BUCKET ; then
       echo -e "${GREEN}[OK] The list of objects inside ${BUCKET} has been fetched with aws.${NC}"
     else
       echo -e "${RED}[ERROR] Unable to fetch the list of objects inside ${BUCKET} with aws.${NC}" && exit 1
@@ -1069,7 +1074,7 @@ elif [ "$AWS_CLI_API" -eq 1 ] ; then
   # If the variable $ENDPOINT_URL_ADDRESS is not empty...
   else
     # use the aws cli with an S3-compatible non-Amazon service (e.g. Minio)
-    if aws --endpoint-url=$ENDPOINT_URL_ADDRESS s3 ls s3://$BUCKET ; then
+    if aws $REGION --endpoint-url=$ENDPOINT_URL_ADDRESS s3 ls s3://$BUCKET ; then
       echo -e "${GREEN}[OK] The list of objects inside ${BUCKET} has been fetched with aws.${NC}"
     else
       echo -e "${RED}[ERROR] Unable to fetch the list of objects inside ${BUCKET} with aws.${NC}" && exit 1
@@ -1244,14 +1249,14 @@ else
       # use the aws cli with Amazon AWS S3
 
       # Download files sequentially
-      if aws s3 cp s3://$BUCKET $DIRECTORY --recursive ; then
+      if aws $REGION s3 cp s3://$BUCKET $DIRECTORY --recursive ; then
         echo -e "${GREEN}[OK] Files have been downloaded sequentially with aws.${NC}"
       else
         echo -e "${RED}[ERROR] Unable to download the files sequentially with aws.${NC}" && exit 1
       fi
     else
       # use the aws cli with an S3-compatible non-Amazon service (e.g. Minio)
-      if aws --endpoint-url=$ENDPOINT_URL_ADDRESS s3 cp s3://$BUCKET $DIRECTORY --recursive ; then
+      if aws $REGION --endpoint-url=$ENDPOINT_URL_ADDRESS s3 cp s3://$BUCKET $DIRECTORY --recursive ; then
         echo -e "${GREEN}[OK] Files have been downloaded sequentially with aws.${NC}"
       else
         echo -e "${RED}[ERROR] Unable to download the files sequentially with aws.${NC}" && exit 1
@@ -1439,7 +1444,7 @@ else
     if [ -z "$ENDPOINT_URL_ADDRESS" ] ; then
       # use the aws cli with Amazon AWS S3
       # Erase files (objects) inside the bucket sequentially
-      if aws s3 rm s3://$BUCKET --recursive --include "*" ; then
+      if aws $REGION s3 rm s3://$BUCKET --recursive --include "*" ; then
         echo -e "${GREEN}[OK] Files inside the bucket (container) ${BUCKET} have been erased sequentially with aws.${NC}"
       else
         echo -e "${RED}[ERROR] Unable to erase the files inside the bucket (container) ${BUCKET} sequentially with aws.${NC}" && exit 1
@@ -1447,7 +1452,7 @@ else
     # If the variable $ENDPOINT_URL_ADDRESS is not empty...
     else
       # use the aws cli with an S3-compatible non-Amazon service (e.g. Minio)
-      if aws --endpoint-url=$ENDPOINT_URL_ADDRESS s3 rm s3://$BUCKET --recursive --include "*" ; then
+      if aws $REGION --endpoint-url=$ENDPOINT_URL_ADDRESS s3 rm s3://$BUCKET --recursive --include "*" ; then
         echo -e "${GREEN}[OK] Files inside the bucket (container) ${BUCKET} have been erased sequentially with aws.${NC}"
       else
         echo -e "${RED}[ERROR] Unable to erase the files inside the bucket (container) ${BUCKET} sequentially with aws.${NC}" && exit 1
@@ -1543,7 +1548,7 @@ elif [ "$AWS_CLI_API" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
   # If [ -z "$VAR" ] is true of the variable $VAR is empty. 
   if [ -z "$ENDPOINT_URL_ADDRESS" ] ; then
     # use the aws cli with Amazon AWS S3
-    if aws s3 rb s3://$BUCKET ; then
+    if aws $REGION s3 rb s3://$BUCKET ; then
     echo -e "${GREEN}[OK] Bucket (Container) ${BUCKET} has been erased with aws.${NC}"
     else
       echo -e "${RED}[ERROR] Unable to erase the bucket (container) ${BUCKET} with aws.${NC}" && exit 1
@@ -1551,7 +1556,7 @@ elif [ "$AWS_CLI_API" -eq 1 ] && [ "$BUCKET_NO_LOGIN" -eq 0 ] ; then
   # If the variable $ENDPOINT_URL_ADDRESS is not empty...
   else
     # use the aws cli with an S3-compatible non-Amazon service (e.g. Minio)
-    if aws --endpoint-url=$ENDPOINT_URL_ADDRESS s3 rb s3://$BUCKET ; then
+    if aws $REGION --endpoint-url=$ENDPOINT_URL_ADDRESS s3 rb s3://$BUCKET ; then
     echo -e "${GREEN}[OK] Bucket (Container) ${BUCKET} has been erased with aws.${NC}"
     else
       echo -e "${RED}[ERROR] Unable to erase the bucket (container) ${BUCKET} with aws.${NC}" && exit 1
