@@ -204,7 +204,7 @@ else
     ping -V
 fi
 
-# Only if the user wants to execute the upload and dowload of the files in parallel...
+# Only if the user wants to execute the upload and download of the files in parallel...
 if [ "$PARALLEL" -eq 1 ] ; then
   # ... the script needs to check, if the command line tool GNU parallel is installed
   if ! [ -x "$(command -v parallel)" ]; then
