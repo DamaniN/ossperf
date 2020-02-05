@@ -69,6 +69,7 @@ Storage services tested with this tool are so far:
     -k : keep the local files and the directory afterwards (do not clean up)
     -p : upload and download the files in parallel
     -o : appended the results to a local file results.csv
+    -O : name of output file
 
 ## Requirements
 
@@ -87,6 +88,12 @@ These software packages are optional:
 - [az](https://github.com/Azure/azure-cli) -- Python client for the Azure CLI (tested with version 2.0)
 - [gsutil](https://github.com/GoogleCloudPlatform/gsutil) -- Python client for the Google Cloud Storage as replacement for s3cmd (tested with version 4.27 and 4.38)
 - [aws](https://github.com/aws/aws-cli) -- AWS CLI client for the S3 API (tested with version 1.15.6)
+
+### Installation
+
+- Run `parallel -bibtex` and accept the citation. This will remove messages from the `parallel` program.
+- See the respective cloud CLI websites to to install the CLI versions of their tools.
+- Use the OS installer to install the other OS command requirements.
 
 ## Example
 
